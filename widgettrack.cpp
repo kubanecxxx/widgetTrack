@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QDebug>
+#include <QTime>
 
 WidgetTrack::WidgetTrack(QWidget *parent) :
     QWidget(parent),
@@ -27,6 +28,7 @@ WidgetTrack::WidgetTrack(QWidget *parent) :
      * tootlip kde sme s čislem vzorku
      ******************************************************************/
 
+    setMouseTracking(true);
 }
 
 WidgetTrack::~WidgetTrack()
@@ -57,13 +59,22 @@ void WidgetTrack::PutData(QVector<float> &data)
  ******************************************************************/
 void WidgetTrack::Interpolate(int start, int stop, int pixels)
 {
+    //ruzny režimy interpolace
+    //ten co je teď
+    //pro pár vzorku na pixel
+    // a žádná pro 1 a miň vzorku na pixel
+    //taky počitat s nulama na začátku
+    // a nepočitat to zbytečně
+    //nebo to cely neřešit a přidávat nulovy vzorky
+    //a počitat interpolaci furt aji z nulovéch vzorku
+
     interpolation.clear();
-    interpolation.resize(pixels);
-    Pixels = pixels;
+    samplesPerPixel = pixels;
+    Pixels =  (stop - start) / samplesPerPixel;
+    interpolation.resize(Pixels);
+    pixels = Pixels;
 
-    int samplesInPixel = (stop - start) / pixels;
-    samplesPerPixel = samplesInPixel;
-
+    int samplesInPixel = samplesPerPixel;
     for (int i = 0 ; i < pixels - 1; i++)
     {
         float result = 0;
@@ -104,6 +115,10 @@ void WidgetTrack::paintEvent(QPaintEvent *)
     if (interpolation.empty())
         return;
 
+    //tady fláknout ještě ruzny režimy vykreslování
+    //počitat s čislem počet nul na začátku nebo
+    //spiš s nějakéma rozsahama nul
+
     QPainter p;
 
     int height = rect().height();
@@ -127,11 +142,14 @@ void WidgetTrack::paintEvent(QPaintEvent *)
 
 void WidgetTrack::mouseMoveEvent(QMouseEvent * evt)
 {
+    int sample = evt->pos().x() * samplesPerPixel + start;
+    emit mouseOver( sample, QTime::currentTime());
+
+    //setToolTip(QString("Vzorek %1").arg(sample));
     if (pressed)
     {
         point2 = evt->pos();
         repaint();
-
     }
 }
 
@@ -158,14 +176,7 @@ void WidgetTrack::mouseReleaseEvent(QMouseEvent * evt)
 void WidgetTrack::wheelEvent(QWheelEvent * wheel)
 {
     int delta = wheel->delta();
-  //  emit zoom(delta, wheel->x() * samplesPerPixel + start);
-
-    int co;
-    if (delta > 0)
-        co = Pixels * 2;
-    else
-        co = Pixels / 2;
-    Zoom(wheel->x() * samplesPerPixel + start, wheel->x(),co);
+    emit zoom(delta, wheel->x() ,wheel->x() * samplesPerPixel + start);
 }
 
 /** ****************************************************************
@@ -177,12 +188,12 @@ void WidgetTrack::wheelEvent(QWheelEvent * wheel)
 void WidgetTrack::Zoom(int sample, int pos, int pixels)
 {
     Interpolate(pixels);
-
-
+    int center = (int) (sample - (pos * samplesPerPixel));
+    Scroll(center);
 }
 
 //cílem je vypočitat start a stop
-void WidgetTrack::Scroll(int center) //číslo vzorku
+void WidgetTrack::Scroll(int center) //číslo pixelu
 {
     int samples = rect().width() * samplesPerPixel;
 
@@ -193,4 +204,9 @@ void WidgetTrack::Scroll(int center) //číslo vzorku
     stop = start + samples;
     if (stop > this->samples.count())
         stop = this->samples.count();
+}
+
+int WidgetTrack::FirstPixel()
+{
+    return (start / samplesPerPixel);
 }

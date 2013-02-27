@@ -19,8 +19,14 @@
    </item>
    <item>
     <widget class="QScrollBar" name="horizontalScrollBar">
+     <property name="singleStep">
+      <number>5</number>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="invertedControls">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

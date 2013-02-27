@@ -21,13 +21,14 @@ WidgetTrack * WidgetMultiTrack::AddTrack()
     WidgetTrack * track = new WidgetTrack;
     tracks.push_back(track);
     ui->layoutTracks->addWidget(track);
-    connect(track,SIGNAL(zoom(int,int)),this,SLOT(Zoomed(int,int)));
+    connect(track,SIGNAL(zoom(int,int,int)),this,SLOT(Zoomed(int,int,int)));
+    connect(track,SIGNAL(mouseOver(int,QTime)),this,SIGNAL(MouseMoved(int,QTime)));
 
     return track;
 }
 
 
-void WidgetMultiTrack::Zoomed(int delta,int sample)
+void WidgetMultiTrack::Zoomed(int delta,int pixel, int sampleIdx)
 {
     //vypočitat počet pixelu na ktery interpolovat
     //vymyslet rozumnej krok
@@ -35,31 +36,33 @@ void WidgetMultiTrack::Zoomed(int delta,int sample)
     //pixelu a stejnej počet vzorku na pixel
 
     if (delta > 0)
-        zoom *= 2;
-    else
         zoom /= 2;
-
-    //vybere graf kterej má nejvic vzorku
-    QVector<int> sizes;
-    foreach(WidgetTrack * track, tracks)
-        sizes.push_back(track->samples.count());
-
-    qSort(sizes);
-    int samples = sizes.at(sizes.count() - 1);
+    else
+        zoom *= 2;
 
     //nechá interpolovat a překreslit všechny grafy
     //stejně podle toho kterej měl nejvic vzorku
+    int oj;
+    int size;
+    int count;
     foreach(WidgetTrack * track, tracks)
     {
-        track->Interpolate(0,samples,zoom);
-        track->Scroll(sample);
+        track->Zoom(sampleIdx, pixel, zoom);
         track->repaint();
+        oj = track->FirstPixel();
+        size = track->rect().width();
+        count = track->interpolation.count();
     }
+
+    //předělat scrollbar
+    ui->horizontalScrollBar->setMaximum(count);
+    ui->horizontalScrollBar->setPageStep(size);
+    ui->horizontalScrollBar->setValue(oj);
 }
 
-
-void WidgetMultiTrack::on_horizontalScrollBar_sliderMoved(int position)
+void WidgetMultiTrack::on_horizontalScrollBar_actionTriggered(int action)
 {
+    int position = ui->horizontalScrollBar->value();
     foreach(WidgetTrack * track, tracks)
     {
         int c = position * track->samplesPerPixel;

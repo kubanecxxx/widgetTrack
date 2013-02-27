@@ -2,6 +2,7 @@
 #define WIDGETMULTITRACK_H
 
 #include <QWidget>
+#include <QTime>
 
 namespace Ui {
 class WidgetMultiTrack;
@@ -17,6 +18,9 @@ public:
     ~WidgetMultiTrack();
     WidgetTrack * AddTrack();
 
+signals:
+    void MouseMoved(int pos, QTime time);
+
 private:
     Ui::WidgetMultiTrack *ui;
     QList<WidgetTrack *> tracks;
@@ -25,8 +29,9 @@ private:
     int zoom;
 
 private slots:
-    void Zoomed(int delta, int x);
-    void on_horizontalScrollBar_sliderMoved(int position);
+    void Zoomed(int delta, int pixel, int sample);
+
+    void on_horizontalScrollBar_actionTriggered(int action);
 };
 
 #endif // WIDGETMULTITRACK_H

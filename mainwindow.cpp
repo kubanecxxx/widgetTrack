@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->verticalLayout->addWidget(multi);
     WidgetTrack * track = multi->AddTrack();
    // multi->AddTrack();
+    connect(multi,SIGNAL(MouseMoved(int,QTime)),this,SLOT(MouseHovered(int,QTime)));
 
     SF_INFO info;
     memset(&info,0,sizeof(info));
@@ -29,4 +30,10 @@ MainWindow::~MainWindow()
 {
     delete ui;
 
+}
+
+
+void MainWindow::MouseHovered(int pos, QTime time)
+{
+    statusBar()->showMessage(QString("%1 / %2").arg(pos).arg(time.toString()));
 }

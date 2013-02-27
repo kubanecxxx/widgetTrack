@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTime>
 
 namespace Ui {
 class MainWindow;
@@ -17,6 +18,9 @@ public:
     
 private:
     Ui::MainWindow *ui;
+
+private slots:
+    void MouseHovered(int pos, QTime time);
 };
 
 #endif // MAINWINDOW_H
