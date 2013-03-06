@@ -23,6 +23,7 @@ public:
 signals:
     void zoom(int delta,int pos, int sample);
     void mouseOver(int sample, QTime time);
+    void signal_Scroll(int delta);
 
 private:
     typedef enum {NONE, FULL, LITTLE} enumInterpolation_t;
@@ -36,6 +37,8 @@ private:
     int stop;
     int Pixels;     /// celá track v pixelech
     float samplesPerPixel;
+    int SelectionStart;
+    int SelectionStop;
 
     void Interpolate(int start, int stop, float samplesPerPixel);
     void Interpolate(float pixels);
@@ -49,7 +52,6 @@ private:
     void wheelEvent(QWheelEvent *);
 
     bool pressed;
-    QPoint point,point2;
     enumInterpolation_t InterpolationType;
 
     void Draw();

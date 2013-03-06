@@ -31,6 +31,7 @@ private:
 
 private slots:
     void Zoomed(int delta, int pixel, int sample);
+    void Scrolled(int delta);
 
     void on_horizontalScrollBar_actionTriggered(int action);
 };

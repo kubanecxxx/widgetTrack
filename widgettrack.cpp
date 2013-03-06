@@ -13,7 +13,9 @@ WidgetTrack::WidgetTrack(QWidget *parent) :
     pressed(false),
     center(0),
     start(0),
-    stop(0)
+    stop(0),
+    SelectionStart(0),
+    SelectionStop(0)
 {
     ui->setupUi(this);
 
@@ -136,8 +138,15 @@ void WidgetTrack::paintEvent(QPaintEvent *)
     QPainter p;
     p.begin(this);
     p.setPen(Qt::blue);
-
     int height = rect().height();
+
+    /*
+     * vykreslit výběr
+     */
+    int startPixel = (SelectionStart - start) / samplesPerPixel ;
+    int stopPixel =(SelectionStop - start) / samplesPerPixel ;
+    p.fillRect(startPixel,5,stopPixel - startPixel , height - 10,Qt::gray);
+
 
     int b = 0;
     float ch = 0;
@@ -172,14 +181,9 @@ void WidgetTrack::paintEvent(QPaintEvent *)
                 p.drawLine(b,height/2 + fitted[i],b,height/2-fitted[i]);
         break;
     }
-
-    //zvlášt vypočitat ktery pixely označit podle
-    //vybranech vzorku
-
     p.setPen(Qt::black);
     p.drawLine(0,height/2,rect().width(),height/2);
     p.drawRect(0,0,rect().width()-1,rect().height()-1);
-    //p.fillRect(point.x(),5,point2.x() - point.x(),rect().height()- 10,Qt::gray);
 }
 
 void WidgetTrack::mouseMoveEvent(QMouseEvent * evt)
@@ -190,7 +194,7 @@ void WidgetTrack::mouseMoveEvent(QMouseEvent * evt)
     //setToolTip(QString("Vzorek %1").arg(sample));
     if (pressed)
     {
-        point2 = evt->pos();
+        SelectionStop = evt->pos().x() * samplesPerPixel + start ;
         repaint();
     }
 }
@@ -200,7 +204,7 @@ void WidgetTrack::mousePressEvent(QMouseEvent * evt)
     if (evt->button() == Qt::LeftButton)
     {
         pressed = true;
-        point = evt->pos();
+        SelectionStart = evt->pos().x() * samplesPerPixel + start ;
     }
     QWidget::mousePressEvent(evt);
 }
@@ -210,7 +214,7 @@ void WidgetTrack::mouseReleaseEvent(QMouseEvent * evt)
     if (evt->button() == Qt::LeftButton)
     {
         pressed = false;
-        point2 = evt->pos();
+        SelectionStop = evt->pos().x() * samplesPerPixel + start ;
         repaint();
     }
 }
@@ -218,7 +222,11 @@ void WidgetTrack::mouseReleaseEvent(QMouseEvent * evt)
 void WidgetTrack::wheelEvent(QWheelEvent * wheel)
 {
     int delta = wheel->delta();
-    emit zoom(delta, wheel->x() ,wheel->x() * samplesPerPixel + start);
+
+    if (wheel->modifiers().testFlag(Qt::ControlModifier))
+        emit zoom(delta, wheel->x() ,wheel->x() * samplesPerPixel + start);
+    else
+        emit signal_Scroll(delta);
 }
 
 /** ****************************************************************

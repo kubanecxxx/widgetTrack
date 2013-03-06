@@ -2,6 +2,7 @@
 #include "ui_widgetmultitrack.h"
 #include "widgettrack.h"
 #include <math.h>
+#include <QDebug>
 
 WidgetMultiTrack::WidgetMultiTrack(QWidget *parent) :
     QWidget(parent),
@@ -23,6 +24,8 @@ WidgetTrack * WidgetMultiTrack::AddTrack()
     ui->layoutTracks->addWidget(track);
     connect(track,SIGNAL(zoom(int,int,int)),this,SLOT(Zoomed(int,int,int)));
     connect(track,SIGNAL(mouseOver(int,QTime)),this,SIGNAL(MouseMoved(int,QTime)));
+    connect(track,SIGNAL(signal_Scroll(int)),this,SLOT(Scrolled(int)));
+
 
     return track;
 }
@@ -55,16 +58,16 @@ void WidgetMultiTrack::Zoomed(int delta,int pixel, int sampleIdx)
         oj = track->FirstPixel();
         size = track->rect().width();
         //předělat
-        count = track->interpolation.count();
+        count = track->samples.count() / track->samplesPerPixel;
     }
 
     //předělat scrollbar
-    ui->horizontalScrollBar->setMaximum(count);
-    ui->horizontalScrollBar->setPageStep(size);
+    ui->horizontalScrollBar->setMaximum(count - size*2/3);
+    ui->horizontalScrollBar->setPageStep(size / 2);
     ui->horizontalScrollBar->setValue(oj);
 }
 
-void WidgetMultiTrack::on_horizontalScrollBar_actionTriggered(int action)
+void WidgetMultiTrack::on_horizontalScrollBar_actionTriggered(int)
 {
     int position = ui->horizontalScrollBar->value();
     foreach(WidgetTrack * track, tracks)
@@ -73,4 +76,16 @@ void WidgetMultiTrack::on_horizontalScrollBar_actionTriggered(int action)
         track->Scroll(c);
         track->repaint();
     }
+}
+
+void WidgetMultiTrack::Scrolled(int delta)
+{
+    int val = ui->horizontalScrollBar->value();
+    int step = ui->horizontalScrollBar->pageStep();
+    if (delta > 0)
+        ui->horizontalScrollBar->setValue(val + step);
+    else
+        ui->horizontalScrollBar->setValue(val - step);
+
+    on_horizontalScrollBar_actionTriggered(0);
 }

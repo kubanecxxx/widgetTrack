@@ -38,6 +38,9 @@
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
+     <property name="invertedAppearance">
+      <bool>false</bool>
+     </property>
      <property name="invertedControls">
       <bool>true</bool>
      </property>
