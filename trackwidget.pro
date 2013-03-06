@@ -15,14 +15,17 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     widgettrack.cpp \
-    widgetmultitrack.cpp
+    widgetmultitrack.cpp \
+    widgetaxis.cpp
 
 HEADERS  += mainwindow.h \
     widgettrack.h \
-    widgetmultitrack.h
+    widgetmultitrack.h \
+    widgetaxis.h
 
 FORMS    += mainwindow.ui \
     widgettrack.ui \
-    widgetmultitrack.ui
+    widgetmultitrack.ui \
+    widgetaxis.ui
 
 unix:!macx: LIBS += -lsndfile

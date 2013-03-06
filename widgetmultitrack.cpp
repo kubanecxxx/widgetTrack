@@ -57,14 +57,17 @@ void WidgetMultiTrack::Zoomed(int delta,int pixel, int sampleIdx)
         track->repaint();
         oj = track->FirstPixel();
         size = track->rect().width();
-        //předělat
         count = track->samples.count() / track->samplesPerPixel;
+        ui->axis->SamplesPerPixel = track->samplesPerPixel;
+        ui->axis->FirstSample = track->start;
     }
 
     //předělat scrollbar
     ui->horizontalScrollBar->setMaximum(count - size*2/3);
     ui->horizontalScrollBar->setPageStep(size / 2);
     ui->horizontalScrollBar->setValue(oj);
+
+    ui->axis->repaint();
 }
 
 void WidgetMultiTrack::on_horizontalScrollBar_actionTriggered(int)
@@ -74,6 +77,8 @@ void WidgetMultiTrack::on_horizontalScrollBar_actionTriggered(int)
     {
         int c = position * track->samplesPerPixel;
         track->Scroll(c);
+        ui->axis->FirstSample = c;
+        ui->axis->repaint();
         track->repaint();
     }
 }
@@ -82,7 +87,7 @@ void WidgetMultiTrack::Scrolled(int delta)
 {
     int val = ui->horizontalScrollBar->value();
     int step = ui->horizontalScrollBar->pageStep();
-    if (delta > 0)
+    if (delta < 0)
         ui->horizontalScrollBar->setValue(val + step);
     else
         ui->horizontalScrollBar->setValue(val - step);
