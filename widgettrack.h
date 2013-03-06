@@ -25,6 +25,8 @@ signals:
     void mouseOver(int sample, QTime time);
 
 private:
+    typedef enum {NONE, FULL, LITTLE} enumInterpolation_t;
+
     Ui::WidgetTrack *ui;
     QVector<float> samples;
     QVector<float> interpolation;
@@ -33,13 +35,13 @@ private:
     int start;
     int stop;
     int Pixels;     /// celá track v pixelech
-    int samplesPerPixel;
+    float samplesPerPixel;
 
-    void Interpolate(int start, int stop, int samplesPerPixel);
-    void Interpolate(int pixels);
+    void Interpolate(int start, int stop, float samplesPerPixel);
+    void Interpolate(float pixels);
     void VerticalFit(int height);
     void Scroll(int FirstSample);
-    void Zoom(int sample, int pos, int samplesPerPixel);
+    void Zoom(int sample, int pos, float samplesPerPixel);
     void paintEvent(QPaintEvent *);
     void mouseMoveEvent(QMouseEvent *);
     void mousePressEvent(QMouseEvent *);
@@ -48,6 +50,7 @@ private:
 
     bool pressed;
     QPoint point,point2;
+    enumInterpolation_t InterpolationType;
 
     void Draw();
     void Replot();

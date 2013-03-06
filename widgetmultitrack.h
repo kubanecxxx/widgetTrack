@@ -8,6 +8,7 @@ namespace Ui {
 class WidgetMultiTrack;
 }
 
+class QLabel;
 class WidgetTrack;
 class WidgetMultiTrack : public QWidget
 {
@@ -26,7 +27,7 @@ private:
     QList<WidgetTrack *> tracks;
 
     //počet pixelů do kterejch se to má cely narvat
-    int zoom;
+    float zoom;
 
 private slots:
     void Zoomed(int delta, int pixel, int sample);

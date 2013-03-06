@@ -57,7 +57,7 @@ void WidgetTrack::PutData(QVector<float> &data)
  * smrskne všechny vrozky do malyho pole delky pixels
  * v horizontálním směru
  ******************************************************************/
-void WidgetTrack::Interpolate(int start, int stop, int pixels)
+void WidgetTrack::Interpolate(int start, int stop, float pixels)
 {
     //ruzny režimy interpolace
     //ten co je teď
@@ -68,31 +68,52 @@ void WidgetTrack::Interpolate(int start, int stop, int pixels)
     //nebo to cely neřešit a přidávat nulovy vzorky
     //a počitat interpolaci furt aji z nulovéch vzorku
 
-    interpolation.clear();
     samplesPerPixel = pixels;
-    Pixels =  (stop - start) / samplesPerPixel;
-    interpolation.resize(Pixels);
-    pixels = Pixels;
 
-    int samplesInPixel = samplesPerPixel;
-    for (int i = 0 ; i < pixels - 1; i++)
+    //určit typ interpolace
+    if (pixels <= 1)
+        InterpolationType = NONE;
+    else if (pixels <= 10)
+        InterpolationType = LITTLE;
+    else
+        InterpolationType = FULL;
+
+    switch (InterpolationType)
     {
-        float result = 0;
-        if (samplesInPixel * (i+1) > samples.count())
+    case NONE:
+
+        break;
+
+    case LITTLE:
+
+        break;
+
+    case FULL:
+        interpolation.clear();
+        Pixels =  (stop - start) / samplesPerPixel;
+        interpolation.resize(stop / samplesPerPixel);
+        interpolation.fill(0);
+        int samplesInPixel = samplesPerPixel;
+        for (int i = start/samplesPerPixel ; i < interpolation.count(); i++)
         {
-            result = 0;
+            float result = 0;
+            if (samplesInPixel * (i+1) > samples.count())
+            {
+                result = 0;
+            }
+            else
+            {
+                for (int j = i * samplesInPixel; j < samplesInPixel * (i+1);j++ )
+                    result += samples[j] * samples[j];
+            }
+            result /= samplesInPixel;
+            interpolation[i] = sqrt(result);
         }
-        else
-        {
-            for (int j = i * samplesInPixel; j < samplesInPixel * (i+1);j++ )
-                result += samples[j] * samples[j];
-        }
-        result /= samplesInPixel;
-        interpolation[i] = sqrt(result);
+        break;
     }
 }
 
-void WidgetTrack::Interpolate(int pixels)
+void WidgetTrack::Interpolate(float pixels)
 {
     Interpolate(0,samples.count(), pixels);
 }
@@ -112,32 +133,53 @@ void WidgetTrack::VerticalFit(int height)
 
 void WidgetTrack::paintEvent(QPaintEvent *)
 {
-    if (interpolation.empty())
-        return;
-
-    //tady fláknout ještě ruzny režimy vykreslování
-    //počitat s čislem počet nul na začátku nebo
-    //spiš s nějakéma rozsahama nul
-
     QPainter p;
-
-    int height = rect().height();
-    VerticalFit(height);
     p.begin(this);
-
-    p.setPen(Qt::red);
-    p.fillRect(point.x(),5,point2.x() - point.x(),rect().height()- 10,Qt::gray);
-
     p.setPen(Qt::blue);
 
+    int height = rect().height();
+
     int b = 0;
-    for (int i = start / samplesPerPixel ; i < stop / samplesPerPixel -1; i++, b++)
-        if (i < fitted.count() && b < rect().width())
-            p.drawLine(b,height/2 + fitted[i],b,height/2-fitted[i]);
+    float ch = 0;
+    float alte = 0;
+    float alteS  = 0;
+    switch (InterpolationType)
+    {
+    case NONE:
+        for (int i = start ; i < stop ; i++)
+        {
+            float sample = samples[i] * height / 2+ height / 2; //fit
+            ch += 1/samplesPerPixel;
+            p.setPen(Qt::red);
+            p.drawEllipse(ch,sample,2,2);
+
+            p.setPen(Qt::blue);
+            if (ch > 1/samplesPerPixel )
+                p.drawLine(alte,alteS,ch,sample);
+            alte = ch;
+            alteS = sample;
+        }
+        break;
+
+    case LITTLE:
+    case FULL:
+        if (interpolation.empty())
+            return;
+
+        VerticalFit(height);
+        for (int i = start / samplesPerPixel ; i < stop / samplesPerPixel -1; i++, b++)
+            if (i < fitted.count() && b < rect().width())
+                p.drawLine(b,height/2 + fitted[i],b,height/2-fitted[i]);
+        break;
+    }
+
+    //zvlášt vypočitat ktery pixely označit podle
+    //vybranech vzorku
 
     p.setPen(Qt::black);
     p.drawLine(0,height/2,rect().width(),height/2);
     p.drawRect(0,0,rect().width()-1,rect().height()-1);
+    //p.fillRect(point.x(),5,point2.x() - point.x(),rect().height()- 10,Qt::gray);
 }
 
 void WidgetTrack::mouseMoveEvent(QMouseEvent * evt)
@@ -185,9 +227,9 @@ void WidgetTrack::wheelEvent(QWheelEvent * wheel)
  * @param pos pozice vzorku v pixelech
  * @param samplePerPixel míra zoomu, kolik vzorků na pixel
  ******************************************************************/
-void WidgetTrack::Zoom(int sample, int pos, int pixels)
+void WidgetTrack::Zoom(int sample, int pos, float pixels)
 {
-    Interpolate(pixels);
+    samplesPerPixel = pixels;
     int center = (int) (sample - (pos * samplesPerPixel));
     Scroll(center);
 }
@@ -204,6 +246,8 @@ void WidgetTrack::Scroll(int center) //číslo pixelu
     stop = start + samples;
     if (stop > this->samples.count())
         stop = this->samples.count();
+
+    Interpolate(start,stop,samplesPerPixel);
 }
 
 int WidgetTrack::FirstPixel()

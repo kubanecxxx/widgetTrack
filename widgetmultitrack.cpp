@@ -6,7 +6,7 @@
 WidgetMultiTrack::WidgetMultiTrack(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::WidgetMultiTrack),
-    zoom(500)
+    zoom(5000)
 {
     ui->setupUi(this);
 }
@@ -36,10 +36,13 @@ void WidgetMultiTrack::Zoomed(int delta,int pixel, int sampleIdx)
     //pixelu a stejnej počet vzorku na pixel
 
     if (delta > 0)
+    {
         zoom /= 2;
+    }
     else
         zoom *= 2;
 
+    ui->label->setNum(zoom);
     //nechá interpolovat a překreslit všechny grafy
     //stejně podle toho kterej měl nejvic vzorku
     int oj;
@@ -51,6 +54,7 @@ void WidgetMultiTrack::Zoomed(int delta,int pixel, int sampleIdx)
         track->repaint();
         oj = track->FirstPixel();
         size = track->rect().width();
+        //předělat
         count = track->interpolation.count();
     }
 

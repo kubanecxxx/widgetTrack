@@ -23,7 +23,13 @@ MainWindow::MainWindow(QWidget *parent) :
     QVector<float> data(info.frames);
     sf_read_float(file,data.data(),info.frames);
 
-    track->PutData(data);
+    QVector<float> hoje(info.frames / 2);
+    for (int i = 0 ; i < hoje.count(); i++)
+    {
+        hoje[i] = data[i*2];
+    }
+
+    track->PutData(hoje);
 }
 
 MainWindow::~MainWindow()
