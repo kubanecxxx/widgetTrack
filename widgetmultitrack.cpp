@@ -94,3 +94,9 @@ void WidgetMultiTrack::Scrolled(int delta)
 
     on_horizontalScrollBar_actionTriggered(0);
 }
+
+void WidgetMultiTrack::RemoveTrack(WidgetTrack * track)
+{
+    tracks.removeOne(track);
+    track->deleteLater();
+}

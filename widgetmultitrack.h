@@ -20,6 +20,7 @@ public:
     WidgetTrack * AddTrack();
     inline int GetTrackCount() const {return tracks.count();}
     inline WidgetTrack * GetTrack(int i) const {return tracks.at(i);}
+    void RemoveTrack(WidgetTrack * track);
 
 signals:
     void MouseMoved(int pos, QTime time);
