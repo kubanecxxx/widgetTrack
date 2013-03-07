@@ -15,7 +15,8 @@ WidgetTrack::WidgetTrack(QWidget *parent) :
     start(0),
     stop(0),
     SelectionStart(0),
-    SelectionStop(0)
+    SelectionStop(0),
+    samplesPerPixel(10000)
 {
     ui->setupUi(this);
 
@@ -51,6 +52,13 @@ void WidgetTrack::PutData(QVector<float> &data)
     stop = data.count() - 1;
     center = stop/2;
     Interpolate(500);
+    repaint();
+}
+
+void WidgetTrack::AddData(QVector<float> &data)
+{
+    samples += data;
+    Scroll(samples.count() - rect().width() * samplesPerPixel);
     repaint();
 }
 
@@ -261,4 +269,11 @@ void WidgetTrack::Scroll(int center) //číslo pixelu
 int WidgetTrack::FirstPixel()
 {
     return (start / samplesPerPixel);
+}
+
+QVector<float> WidgetTrack::GetSelectedSamples() const
+{
+    QVector<float> samp;
+    samp = samples.mid(SelectionStart, SelectionStop - SelectionStart);
+    return samp;
 }

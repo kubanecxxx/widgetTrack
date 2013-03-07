@@ -18,6 +18,8 @@ public:
     explicit WidgetMultiTrack(QWidget *parent = 0);
     ~WidgetMultiTrack();
     WidgetTrack * AddTrack();
+    inline int GetTrackCount() const {return tracks.count();}
+    inline WidgetTrack * GetTrack(int i) const {return tracks.at(i);}
 
 signals:
     void MouseMoved(int pos, QTime time);

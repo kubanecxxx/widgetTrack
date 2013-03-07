@@ -17,8 +17,12 @@ public:
     explicit WidgetTrack(QWidget *parent = 0);
     ~WidgetTrack();
     void PutData(QVector<float> & data);
-    void AddData(QVector<float> & data);
+
     int FirstPixel();
+    QVector<float> GetSelectedSamples() const;
+
+public slots:
+    void AddData(QVector<float> & data);
     
 signals:
     void zoom(int delta,int pos, int sample);
