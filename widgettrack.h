@@ -20,6 +20,7 @@ public:
 
     int FirstPixel();
     QVector<float> GetSelectedSamples() const;
+    const QVector<float> * GetData() const {return &samples;}
 
 public slots:
     void AddData(QVector<float> & data);
@@ -28,6 +29,7 @@ signals:
     void zoom(int delta,int pos, int sample);
     void mouseOver(int sample, QTime time);
     void signal_Scroll(int delta);
+    void signal_SelectionChanged();
 
 private:
     typedef enum {NONE, FULL, LITTLE} enumInterpolation_t;

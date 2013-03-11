@@ -224,6 +224,8 @@ void WidgetTrack::mouseReleaseEvent(QMouseEvent * evt)
         pressed = false;
         SelectionStop = evt->pos().x() * samplesPerPixel + start ;
         repaint();
+
+        emit signal_SelectionChanged();
     }
 }
 
