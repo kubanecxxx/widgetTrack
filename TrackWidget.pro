@@ -1,5 +1,6 @@
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
+VPATH += $$PWD
 
 SOURCES +=  widgettrack.cpp \
     widgetmultitrack.cpp \
